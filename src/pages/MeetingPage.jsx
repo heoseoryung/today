@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { meetingItems, meetingCategories, meetingCircles } from '../data/mockData.js';
+import { meetingItems, meetingCategories } from "../data/mockData"; // 경로 확인!
 import { IconMapPin, IconUsers, IconPlus } from '../components/Icons.jsx'; 
 
 // [기능: 모임 상태 표시]

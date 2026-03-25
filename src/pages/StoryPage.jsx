@@ -26,8 +26,7 @@ export default function Stories() {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* 만약 App.jsx에서 Header를 안 뿌려준다면 아래 주석을 푸세요 */}
-      {/* <Header /> */}
+    
 
       <main className="max-w-4xl mx-auto px-4 pt-6">
         {/* 제목 영역 */}

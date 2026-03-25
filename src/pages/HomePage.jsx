@@ -5,7 +5,7 @@ const SERVICE_CARDS = [
     key: 'trade',
     label: '중고거래',
     icon: IconShoppingBag,
-    // 보내주신 이미지의 파스텔 톤 배경색과 아이콘 색상 적용
+
     bg: 'bg-[#FFF0E6]', 
     iconColor: 'text-[#FF6F0F]',
   },
@@ -34,10 +34,10 @@ const SERVICE_CARDS = [
 
 export default function HomePage({ onNavigate }) {
   return (
-    // 전체 레이아웃: 화면 중앙에 1024px 너비로 꽉 차게 배치
+
     <div className="max-w-[1024px] mx-auto px-4 py-12 md:py-20 flex flex-col gap-12 md:gap-16">
       
-      {/* 1. Hero: 이미지의 위치 아이콘과 문구 디자인 적용 */}
+     
       <div className="text-center">
         <div className="inline-flex items-center gap-1.5 text-[#FF6F0F] text-sm font-semibold mb-3">
           <IconMapPin size={16} />
@@ -51,7 +51,6 @@ export default function HomePage({ onNavigate }) {
         </p>
       </div>
 
-      {/* 2. Search: 검색창 디자인 (카테고리 선택 포함) */}
       <div className="max-w-3xl mx-auto w-full flex gap-2">
         <div className="flex-1 flex items-center gap-2 h-14 px-5 rounded-2xl border-2 border-[#EDEDED] bg-white focus-within:border-[#FF6F0F] transition-all shadow-sm">
           <select className="bg-transparent text-base font-semibold text-[#1A1A1A] outline-none cursor-pointer border-r border-[#EDEDED] pr-4 mr-2 h-full">
@@ -70,20 +69,19 @@ export default function HomePage({ onNavigate }) {
         </button>
       </div>
 
-      {/* 3. Service Grid: 이미지의 카드 디자인 (파스텔 배경, 둥근 모서리) 적용 */}
+   
       <div className="grid grid-cols-2 gap-4 md:gap-8">
         {SERVICE_CARDS.map(({ key, label, icon: Icon, bg, iconColor }) => (
           <button
             key={key}
             onClick={() => onNavigate(key)}
-            // 카드의 전체적인 형태와 마우스 오버 효과
             className="group flex flex-col items-center rounded-3xl border border-[#F0F0F0] bg-white p-2 pb-6 hover:border-[#FF6F0F]/30 hover:shadow-xl transition-all duration-300 text-center cursor-pointer"
           >
-            {/* 파스텔 톤 배경의 아이콘 영역 */}
+           
             <div className={`${bg} flex items-center justify-center w-full h-36 md:h-48 rounded-2xl mb-5 transition-transform duration-300 group-hover:scale-[0.98]`}>
               <Icon size={56} className={iconColor} />
             </div>
-            {/* 텍스트 영역 */}
+           
             <p className="font-extrabold text-[#1A1A1A] text-xl md:text-2xl">{label}</p>
           </button>
         ))}

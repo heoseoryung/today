@@ -1,93 +1,112 @@
-import { useState } from 'react';
-/* 상위에서 Header가 이미 있다면 아래 import와 <Header /> 태그는 지우고 쓰세요! */
-// import Header from '../components/Header'; 
-import { tradeCategories } from '../data/mockData.js';
+import { useEffect } from "react"; 
+import { useSelector, useDispatch } from "react-redux";
+import { setCategory, setProducts } from "../api/store/slice/productSlice"; 
+import { useNavigate } from "react-router-dom";
+// [수정] 중괄호 {} 제거하고, 실제 폴더 구조인 ../api/api.js로 연결
+import api from "../api/api.js"; 
 
-// [기능: 에러 방지용 내장 아이콘]
-const IconPlay = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-);
+export default function TradePage() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  const products = useSelector((state) => state.products.filteredItems);
+  const activeTabName = useSelector((state) => state.products.currentCategory);
 
-const IconEye = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-);
+  // 1. 페이지가 마운트될 때 데이터를 가져오는 로직
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // [수정] 존재하지 않는 productApi 대신, import한 api 객체 사용
+        // 서버의 상품 목록 엔드포인트(예: /products)를 넣어줘
+        const response = await api.get('/products'); 
+        
+        // [수정] api.js에서 이미 response.data를 처리해서 보내주므로 구조에 맞춰 저장
+        // 만약 서버 응답이 { data: { content: [...] } } 구조라면 아래처럼
+        const items = response.content || response;
+        dispatch(setProducts(items));
+      } catch (error) {
+        console.error("상품을 불러오지 못했습니다:", error);
+      }
+    };
 
-export default function Stories() {
-  const [activeCategory, setActiveCategory] = useState('전체');
+    fetchProducts();
+  }, [dispatch]);
 
-  const stories = [
-    { id: 1, author: '동네카페', avatar: '☕', title: '직접 로스팅한 원두 향기 좀 맡아보세요!', views: 1234, isVideo: false },
-    { id: 2, author: '운동하는사람', avatar: '🏃', title: '오늘 오운완! 같이 뛸 분 계신가요?', views: 856, isVideo: true },
-    { id: 3, author: '맛집탐방', avatar: '🍽️', title: '진짜 여기는 나만 알고 싶은 고기집인데..', views: 2341, isVideo: false },
-    { id: 4, author: '반려동물', avatar: '🐕', title: '우리 집 댕댕이 꼬질꼬질한 모습 보고가세요', views: 3456, isVideo: true },
-    { id: 5, author: '취미생활', avatar: '🎨', title: '퇴근 후 유화 그리기.. 힐링 그 자체입니다.', views: 987, isVideo: false },
-    { id: 6, author: '자전거매니아', avatar: '🚴', title: '한강 라이딩 코스 추천해드립니다!', views: 1567, isVideo: true }
+  const categories = [
+    { id: 0, name: '전체' },
+    { id: 1, name: '디지털기기' },
+    { id: 2, name: '가구/인테리어' },
+    { id: 3, name: '패션의류' },
+    { id: 4, name: '게임/취미' }
   ];
 
+  const handleTabClick = (categoryName) => {
+    dispatch(setCategory(categoryName));
+  };
+
   return (
-    <div className="min-h-screen bg-white pb-20">
-      {/* 만약 App.jsx에서 Header를 안 뿌려준다면 아래 주석을 푸세요 */}
-      {/* <Header /> */}
-
-      <main className="max-w-4xl mx-auto px-4 pt-6">
-        {/* 제목 영역 */}
-        <div className="mb-6 px-1">
-          <h1 className="text-[20px] font-bold text-[#1A1A1A]">스토리</h1>
-          <p className="text-[13px] text-gray-500 font-medium">짧고 재미있는 우리 동네 이야기</p>
-        </div>
-
-        {/* 카테고리 칩 (주황색 포인트) */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 mb-6 border-b border-gray-50">
-          {tradeCategories.map((cat) => (
+    <div className="bg-white">
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* 카테고리 탭 */}
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+          {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`shrink-0 px-4 py-2 rounded-full text-[14px] font-bold transition-all ${
-                activeCategory === cat
-                  ? 'bg-[#FF6F0F] text-white' 
-                  : 'bg-[#F2F3F6] text-[#4D5159]'
-              }`}
+              key={cat.id}
+              onClick={() => handleTabClick(cat.name)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all
+                ${activeTabName === cat.name 
+                  ? "bg-orange-500 text-white shadow-md" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>
 
-        {/* 스토리 그리드 (이미지 스타일) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {stories.map((story) => (
-            <div 
-              key={story.id} 
-              className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-gray-200 cursor-pointer group shadow-sm hover:scale-[1.02] transition-transform"
-            >
-              {/* 더미 썸네일 배경 (원래는 story.thumbnail) */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
-              
-              {/* 비디오 표시 아이콘 */}
-              {story.isVideo && (
-                <div className="absolute top-3 right-3 z-20">
-                  <IconPlay />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="hidden lg:block lg:col-span-1">
+             {/* 필터 영역 (필요시 추가) */}
+          </aside>
+
+          <div className="lg:col-span-3">
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-sm text-gray-500 font-semibold">총 {products?.length || 0}건</p>
+            </div>
+
+            {/* 상품 리스트 그리드 */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              {products && products.length > 0 ? (
+                products.map((product) => (
+                  <div 
+                    key={product.productId} 
+                    onClick={() => navigate(`/trade/${product.productId}`)} 
+                    className="group cursor-pointer"
+                  >
+                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
+                      <img 
+                        src={product.thumbnailUrl || "https://via.placeholder.com/400"} 
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-[15px] font-medium text-gray-900 line-clamp-2 leading-snug">
+                        {product.title}
+                      </h3>
+                      <p className="text-xs text-gray-500">{product.locationName} • {product.createdAt}</p>
+                      <p className="font-bold text-lg text-gray-900">
+                        {product.price ? product.price.toLocaleString() : 0}원
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-20 text-center text-gray-400">
+                  등록된 상품이 없습니다.
                 </div>
               )}
-
-              {/* 하단 정보 */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 z-20 text-white">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-xs">
-                    {story.avatar}
-                  </div>
-                  <span className="text-[11px] font-bold opacity-90">{story.author}</span>
-                </div>
-                <h3 className="text-[13px] font-bold leading-tight line-clamp-2 mb-2">
-                  {story.title}
-                </h3>
-                <div className="flex items-center gap-1">
-                  <IconEye />
-                  <span className="text-[10px] font-medium opacity-80">{story.views.toLocaleString()}</span>
-                </div>
-              </div>
             </div>
-          ))}
+          </div>
         </div>
       </main>
     </div>

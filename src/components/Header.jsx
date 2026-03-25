@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IconSearch, IconBell, IconUser, IconChevronDown } from './Icons.jsx';
+import { Link } from 'react-router-dom'; // 1. Link 불러오기
 
 export default function Header({ currentPage, onNavigate, isLoggedIn }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
