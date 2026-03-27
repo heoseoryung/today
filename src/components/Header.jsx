@@ -1,96 +1,183 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IconSearch, IconBell, IconUser, IconChevronDown } from './Icons.jsx';
-import { Link } from 'react-router-dom'; // 1. Link 불러오기
 
-export default function Header({ currentPage, onNavigate, isLoggedIn }) {
+export default function Header({ isLoggedIn = false, user = null }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isBellActive, setIsBellActive] = useState(false);
+  const dropdownRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentPath = location.pathname;
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    setIsProfileOpen(false);
+    // TODO: POST /api/auth/logout 연결
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#EDEDED]">
-      {/* max-w를 1200으로 늘려 더 넓은 레이아웃 확보 */}
       <div className="flex items-center justify-between px-6 h-16 max-w-[1200px] mx-auto gap-8">
-        
-        {/* 로고 영역 */}
-        <button onClick={() => onNavigate('home')} className="shrink-0 cursor-pointer">
-          <span className="text-[24px] font-black text-[#FF6F0F] tracking-tight">606</span>
-        </button>
 
-        {/* 검색창 영역 - flex-1과 max-w를 크게 설정하여 길게 만듦 */}
+        {/* 로고 */}
+        <Link to="/" className="shrink-0 cursor-pointer">
+          <span className="text-[24px] font-black text-[#FF6F0F] tracking-tight">606</span>
+        </Link>
+
+        {/* 검색창 */}
         <div className="flex-1 max-w-[700px] flex items-center gap-3 h-11 px-4 rounded-xl bg-[#F2F3F6] border border-transparent focus-within:border-[#FF6F0F]/30 focus-within:bg-white focus-within:shadow-sm transition-all">
           <IconSearch size={18} className="text-[#888]" />
-          <input 
-            placeholder="동네 이웃과 가깝고 따뜻한 거래를 시작해보세요" 
+          <input
+            placeholder="동네 이웃과 가깝고 따뜻한 거래를 시작해보세요"
             className="flex-1 bg-transparent text-[15px] outline-none text-[#1A1A1A] placeholder:text-[#999]"
           />
         </div>
 
-        {/* 우측 아이콘 영역 */}
-        <div className="flex items-center gap-4 relative shrink-0">
+        {/* 우측 영역 */}
+        <div className="flex items-center gap-3 shrink-0">
           {isLoggedIn ? (
             <>
-              {/* 알림 아이콘 */}
-              <button className="p-2 text-[#1A1A1A] hover:bg-gray-100 rounded-full relative transition-colors">
-                <IconBell size={24} />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6F0F] rounded-full border-2 border-white"></span>
+              {/* 알림 벨 */}
+              <button
+                onClick={() => setIsBellActive(!isBellActive)}
+                className="relative w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[#F2F3F6] transition-colors"
+              >
+                <IconBell size={22} className="text-[#444]" />
+                {/* 알림 뱃지 */}
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF6F0F] rounded-full border-2 border-white" />
               </button>
 
-              {/* 프로필 영역 */}
-              <div className="relative">
-                <button 
+              {/* 프로필 드롭다운 */}
+              <div className="relative" ref={dropdownRef}>
+                <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-1 p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer border border-transparent hover:border-gray-200"
+                  className="flex items-center gap-2 h-10 pl-2 pr-3 rounded-xl hover:bg-[#F2F3F6] transition-colors"
                 >
-                  <div className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border border-gray-100 flex items-center justify-center">
-                    <IconUser size={28} className="mt-1 text-gray-500" />
-                  </div>
-                  <IconChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  {/* 아바타 */}
+                  {user?.profileImageUrl ? (
+                    <img
+                      src={user.profileImageUrl}
+                      alt="프로필"
+                      className="w-7 h-7 rounded-full object-cover border border-[#EDEDED]"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-[#FFF0E6] flex items-center justify-center">
+                      <IconUser size={15} className="text-[#FF6F0F]" />
+                    </div>
+                  )}
+                  <span className="text-[14px] font-bold text-[#1A1A1A]">
+                    {user?.nickname ?? '닉네임'}
+                  </span>
+                  <IconChevronDown
+                    size={14}
+                    className={`text-[#888] transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
 
-                {/* 프로필 드롭다운 */}
+                {/* 드롭다운 메뉴 */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-52 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in zoom-in duration-200">
-                    <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                      <p className="text-[13px] font-bold text-[#1A1A1A]">당근이웃님</p>
-                      <p className="text-[11px] text-gray-500">매너온도 36.5°C</p>
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-52 bg-white rounded-2xl border border-[#EDEDED] shadow-xl shadow-black/5 overflow-hidden">
+                    {/* 유저 정보 헤더 */}
+                    <div className="px-4 py-3.5 border-b border-[#F0F0F0] bg-[#FAFAFA]">
+                      <p className="text-[13px] font-extrabold text-[#1A1A1A]">
+                        {user?.nickname ?? '닉네임'}
+                      </p>
+                      <p className="text-[12px] text-[#999] mt-0.5">
+                        {user?.locationName ?? '동네 미설정'}
+                      </p>
+                      {/* 매너온도 */}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#FF6F0F] to-[#FFB347] rounded-full transition-all"
+                            style={{ width: `${Math.min(((user?.temperature ?? 36.5) / 100) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[12px] font-bold text-[#FF6F0F]">
+                          {user?.temperature ?? 36.5}°C
+                        </span>
+                      </div>
                     </div>
-                    <button className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-50 transition-colors">나의 당근</button>
-                    <button className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-50 transition-colors">설정</button>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <button 
-                      onClick={() => { alert('로그아웃 되었습니다.'); window.location.reload(); }}
-                      className="w-full px-4 py-2.5 text-left text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
-                    >
-                      로그아웃
-                    </button>
+
+                    {/* 메뉴 항목 */}
+                    <ul className="py-1.5">
+                      {[
+                        { label: '내 프로필', path: '/profile/me' },
+                        { label: '나의 거래', path: '/trade/history' },
+                        { label: '관심 목록', path: '/products/likes' },
+                        { label: '동네 설정', path: '/location' },
+                      ].map((item) => (
+                        <li key={item.path}>
+                          <Link
+                            to={item.path}
+                            onClick={() => setIsProfileOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-[14px] text-[#1A1A1A] hover:bg-[#FFF0E6] hover:text-[#FF6F0F] font-medium transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* 로그아웃 */}
+                    <div className="border-t border-[#F0F0F0] py-1.5">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-4 py-2.5 text-[14px] text-[#999] hover:bg-[#F2F3F6] hover:text-[#FF4444] font-medium transition-colors"
+                      >
+                        로그아웃
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             </>
           ) : (
-            <button 
-              onClick={() => onNavigate('login')}
+            <Link
+              to="/login"
               className="px-5 py-2 rounded-lg border border-[#D1D1D1] text-[15px] font-bold hover:bg-[#F8F8F8] transition-colors"
             >
               로그인
-            </button>
+            </Link>
           )}
         </div>
       </div>
-      
+
       {/* 탭 네비게이션 */}
-      {currentPage !== 'home' && currentPage !== 'login' && (
+      {currentPath !== '/login' && (
         <nav className="flex justify-center gap-10 border-t border-[#F0F0F0] h-14 bg-white">
-          {['trade', 'meeting', 'story', 'dongnae'].map((tab) => (
-            <button 
-              key={tab}
-              onClick={() => onNavigate(tab)}
-              className={`px-4 h-full text-[15px] font-bold relative transition-colors ${
-                currentPage === tab ? 'text-[#FF6F0F]' : 'text-gray-500 hover:text-[#1A1A1A]'
+          {[
+            { id: 'trade', name: '중고거래', path: '/trade' },
+            { id: 'meeting', name: '모임', path: '/meeting' },
+            { id: 'story', name: '스토리', path: '/story' },
+            { id: 'dongnae', name: '동네생활', path: '/dongnae' },
+          ].map((tab) => (
+            <Link
+              key={tab.id}
+              to={tab.path}
+              className={`px-4 h-full flex items-center text-[15px] font-bold relative transition-colors ${
+                currentPath.startsWith(tab.path)
+                  ? 'text-[#FF6F0F]'
+                  : 'text-gray-500 hover:text-[#1A1A1A]'
               }`}
             >
-              {tab === 'trade' ? '중고거래' : tab === 'meeting' ? '모임' : tab === 'story' ? '스토리' : '동네생활'}
-              {currentPage === tab && <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-[#FF6F0F] rounded-t-full" />}
-            </button>
+              {tab.name}
+              {currentPath.startsWith(tab.path) && (
+                <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-[#FF6F0F] rounded-t-full" />
+              )}
+            </Link>
           ))}
         </nav>
       )}

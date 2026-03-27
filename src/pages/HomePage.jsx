@@ -1,13 +1,14 @@
-import { IconShoppingBag, IconGroup, IconCoffee, IconGrid, IconSearch, IconChevronDown, IconMapPin } from '../components/Icons.jsx';
+import { useNavigate } from 'react-router-dom';
+import { IconShoppingBag, IconGroup, IconCoffee, IconGrid, IconSearch, IconMapPin } from '../components/Icons.jsx';
 
 const SERVICE_CARDS = [
   {
     key: 'trade',
     label: '중고거래',
     icon: IconShoppingBag,
-
-    bg: 'bg-[#FFF0E6]', 
+    bg: 'bg-[#FFF0E6]',
     iconColor: 'text-[#FF6F0F]',
+    path: '/trade',
   },
   {
     key: 'meeting',
@@ -15,6 +16,7 @@ const SERVICE_CARDS = [
     icon: IconGroup,
     bg: 'bg-[#FCE4EC]',
     iconColor: 'text-[#E91E8C]',
+    path: '/meeting',
   },
   {
     key: 'story',
@@ -22,6 +24,7 @@ const SERVICE_CARDS = [
     icon: IconCoffee,
     bg: 'bg-[#FFF8E1]',
     iconColor: 'text-[#F59E0B]',
+    path: '/story',
   },
   {
     key: 'dongnae',
@@ -29,15 +32,16 @@ const SERVICE_CARDS = [
     icon: IconGrid,
     bg: 'bg-[#E8F5E9]',
     iconColor: 'text-[#4CAF50]',
+    path: '/dongnae',
   },
 ];
 
-export default function HomePage({ onNavigate }) {
-  return (
+export default function HomePage() {
+  const navigate = useNavigate();
 
+  return (
     <div className="max-w-[1024px] mx-auto px-4 py-12 md:py-20 flex flex-col gap-12 md:gap-16">
-      
-     
+
       <div className="text-center">
         <div className="inline-flex items-center gap-1.5 text-[#FF6F0F] text-sm font-semibold mb-3">
           <IconMapPin size={16} />
@@ -51,6 +55,7 @@ export default function HomePage({ onNavigate }) {
         </p>
       </div>
 
+      {/* 검색바 — 추후 GET /api/search?q= 와 연결 예정 */}
       <div className="max-w-3xl mx-auto w-full flex gap-2">
         <div className="flex-1 flex items-center gap-2 h-14 px-5 rounded-2xl border-2 border-[#EDEDED] bg-white focus-within:border-[#FF6F0F] transition-all shadow-sm">
           <select className="bg-transparent text-base font-semibold text-[#1A1A1A] outline-none cursor-pointer border-r border-[#EDEDED] pr-4 mr-2 h-full">
@@ -69,22 +74,23 @@ export default function HomePage({ onNavigate }) {
         </button>
       </div>
 
-   
+      {/* 서비스 카드 */}
       <div className="grid grid-cols-2 gap-4 md:gap-8">
-        {SERVICE_CARDS.map(({ key, label, icon: Icon, bg, iconColor }) => (
-          <button
-            key={key}
-            onClick={() => onNavigate(key)}
-            className="group flex flex-col items-center rounded-3xl border border-[#F0F0F0] bg-white p-2 pb-6 hover:border-[#FF6F0F]/30 hover:shadow-xl transition-all duration-300 text-center cursor-pointer"
-          >
-           
-            <div className={`${bg} flex items-center justify-center w-full h-36 md:h-48 rounded-2xl mb-5 transition-transform duration-300 group-hover:scale-[0.98]`}>
-              <Icon size={56} className={iconColor} />
-            </div>
-           
-            <p className="font-extrabold text-[#1A1A1A] text-xl md:text-2xl">{label}</p>
-          </button>
-        ))}
+        {SERVICE_CARDS.map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.key}
+              onClick={() => navigate(card.path)}
+              className="group flex flex-col items-center rounded-3xl border border-[#F0F0F0] bg-white p-2 pb-6 hover:border-[#FF6F0F]/30 hover:shadow-xl transition-all duration-300 text-center cursor-pointer"
+            >
+              <div className={`${card.bg} flex items-center justify-center w-full h-36 md:h-48 rounded-2xl mb-5 transition-transform duration-300 group-hover:scale-[0.98]`}>
+                <Icon size={56} className={card.iconColor} />
+              </div>
+              <p className="font-extrabold text-[#1A1A1A] text-xl md:text-2xl">{card.label}</p>
+            </button>
+          );
+        })}
       </div>
 
     </div>

@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+// 백엔드 완성 후 추가
+// import api from '../api/api.js';
 
 const IconMail = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -30,13 +33,6 @@ const IconEyeOff = () => (
   </svg>
 );
 
-const IconX = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18"/>
-    <line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-);
-
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -46,162 +42,154 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// 명세: GET /api/auth/oauth2/authorize/{provider}
 const SOCIAL_LOGINS = [
   {
-    provider: '카카오',
+    provider: 'kakao',
+    label: '카카오',
     bg: 'bg-[#FEE500]',
-    text: 'text-black',
+    text: 'text-[#3A1D1D]',
     border: '',
-    icon: <span className="text-xl">💬</span>,
+    icon: <span className="text-lg">💬</span>,
   },
   {
-    provider: '네이버',
+    provider: 'naver',
+    label: '네이버',
     bg: 'bg-[#03C75A]',
     text: 'text-white',
     border: '',
-    icon: <span className="text-xl font-black">N</span>,
+    icon: <span className="text-base font-black">N</span>,
   },
   {
-    provider: '구글',
+    provider: 'google',
+    label: '구글',
     bg: 'bg-white',
-    text: 'text-gray-700',
-    border: 'border-2 border-gray-200',
+    text: 'text-gray-600',
+    border: 'border border-gray-200',
     icon: <GoogleIcon />,
   },
 ];
 
-// ─────────────────────────────────────────────
-// props:
-//   onNavigate(page)  — App의 setCurrentPage
-//   setIsLoggedIn(bool) — App의 로그인 상태
-// ─────────────────────────────────────────────
-export default function LoginPage({ onNavigate, setIsLoggedIn }) {
+export default function LoginPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLoginSuccess = (message) => {
-    setLoading(true);
-    // 실제 API 연동 시 여기에 fetch 넣으면 됩니다
-    setTimeout(() => {
-      if (setIsLoggedIn) setIsLoggedIn(true);
-      setLoading(false);
-      onNavigate('home');
-    }, 600);
+  // 명세: GET /api/auth/oauth2/authorize/{provider} → 소셜 로그인 리다이렉트
+  // 백엔드 완성 후: window.location.href = `http://localhost:8080/api/auth/oauth2/authorize/${provider}`;
+  const handleSocialLogin = (provider) => {
+    console.log('소셜 로그인:', provider);
+    localStorage.setItem('accessToken', 'mock-token');
+    navigate('/');
   };
 
+  // 임시 이메일 로그인 — 백엔드 완성 후 소셜 로그인으로 대체
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-
     if (!formData.email || !formData.password) {
       setError('이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
-
-    handleLoginSuccess('로그인 되었습니다!');
+    setLoading(true);
+    setTimeout(() => {
+      localStorage.setItem('accessToken', 'mock-token');
+      setLoading(false);
+      navigate('/');
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="max-w-md w-full relative">
+    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[420px]">
+        <div className="bg-white rounded-3xl shadow-xl shadow-black/5 px-8 py-10 relative">
 
-        {/* 닫기 버튼 */}
-        <button
-          onClick={() => onNavigate('home')}
-          className="absolute -top-12 right-0 p-2 text-gray-400 hover:text-gray-700 hover:rotate-90 transition-all duration-200"
-        >
-          <IconX />
-        </button>
+          {/* 닫기 버튼 */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
 
-        {/* 헤더 */}
-        <div className="text-center mb-10">
-          <h1 className="text-2xl font-black text-[#1A1A1A] mb-2">로그인</h1>
-          <p className="text-gray-500 text-sm">하 미친 안끝나</p>
-        </div>
-
-        {/* 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-          {/* 이메일 */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-gray-700 ml-1">이메일</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <IconMail />
-              </span>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                placeholder="example@email.com"
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6F0F] focus:bg-white transition-all"
-              />
-            </div>
+          {/* 타이틀 */}
+          <div className="text-center mb-8">
+            <h1 className="text-[36px] font-black text-[#1A1A1A] mb-2">로그인</h1>
+            <p className="text-[13px] text-gray-400">간편하게 가입하고 상품을 확인하세요</p>
           </div>
 
-          {/* 비밀번호 */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-gray-700 ml-1">비밀번호</label>
+          {/* 이메일 로그인 폼 — 임시, 백엔드 완성 후 제거 예정 */}
+          <form onSubmit={handleSubmit} className="space-y-3 mb-6">
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <IconLock />
-              </span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"><IconMail /></span>
+              <input
+                type="email"
+                value={formData.email}
+                placeholder="이메일"
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full pl-11 pr-4 py-3.5 bg-[#F8F8F8] border border-transparent rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF6F0F]/30 focus:bg-white transition-all placeholder:text-gray-300"
+              />
+            </div>
+
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"><IconLock /></span>
               <input
                 type={showPassword ? 'text' : 'password'}
-                required
                 value={formData.password}
-                placeholder="비밀번호를 입력하세요"
+                placeholder="비밀번호"
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6F0F] focus:bg-white transition-all"
+                className="w-full pl-11 pr-12 py-3.5 bg-[#F8F8F8] border border-transparent rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF6F0F]/30 focus:bg-white transition-all placeholder:text-gray-300"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
               >
                 {showPassword ? <IconEyeOff /> : <IconEye />}
               </button>
             </div>
+
+            {error && <p className="text-[12px] text-red-400 font-medium pl-1">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-2xl bg-[#FF6F0F] text-white font-bold text-[14px] hover:bg-[#E55C00] active:scale-[0.98] transition-all disabled:opacity-50"
+            >
+              {loading ? '로그인 중...' : '로그인'}
+            </button>
+          </form>
+
+          {/* 구분선 */}
+          <div className="relative flex items-center justify-center mb-5">
+            <div className="absolute w-full border-t border-gray-100" />
+            <span className="relative px-3 bg-white text-[12px] text-gray-300 font-medium">또는</span>
           </div>
 
-          {/* 에러 메시지 */}
-          {error && (
-            <p className="text-sm text-red-500 font-medium pl-1">{error}</p>
-          )}
+          {/* 소셜 로그인 */}
+          <div className="space-y-2.5">
+            {SOCIAL_LOGINS.map((item) => (
+              <button
+                key={item.provider}
+                type="button"
+                onClick={() => handleSocialLogin(item.provider)}
+                className={`w-full py-3.5 rounded-2xl font-bold text-[14px] flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] hover:opacity-90 ${item.bg} ${item.text} ${item.border}`}
+              >
+                {item.icon}
+                {item.label}로 이용하기
+              </button>
+            ))}
+          </div>
 
-          {/* 로그인 버튼 */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 rounded-2xl bg-[#FF6F0F] text-white font-bold text-base hover:bg-[#E55C00] active:scale-[0.98] transition-all shadow-lg shadow-orange-100 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? '로그인 중...' : '로그인'}
-          </button>
-        </form>
-
-        {/* 구분선 */}
-        <div className="relative flex items-center justify-center mb-8">
-          <div className="absolute w-full border-t border-gray-100" />
-          <span className="relative px-4 bg-white text-sm text-gray-400">또는</span>
         </div>
 
-        {/* 소셜 로그인 */}
-        <div className="space-y-3">
-          {SOCIAL_LOGINS.map((item) => (
-            <button
-              key={item.provider}
-              type="button"
-              onClick={() => handleLoginSuccess(`${item.provider} 로그인`)}
-              className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all active:scale-[0.98] ${item.bg} ${item.text} ${item.border}`}
-            >
-              {item.icon}
-              {item.provider}로 이용하기
-            </button>
-          ))}
-        </div>
-
+        <p className="text-center text-[12px] text-gray-300 mt-5">
+          로그인 시 이용약관 및 개인정보처리방침에 동의합니다
+        </p>
       </div>
     </div>
   );
