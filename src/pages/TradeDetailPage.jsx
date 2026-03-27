@@ -3,20 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { tradeItems } from '../data/mockData.js';
 import { IconArrowLeft, IconHeart, IconMapPin, IconClock, IconEye, IconStar } from '../components/Icons.jsx';
 
+// 백엔드 완성 후 추가
+// import api from '../api/api.js';
+
 export default function TradeDetailPage() {
   const { productId } = useParams();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
 
-  // 백엔드 완성 후 아래 useEffect로 교체
+  // 백엔드 완성 후 아래로 교체
   // useEffect(() => {
-  //   const fetch = async () => {
-  //     try {
-  //       const res = await api.get(`/products/${productId}`);
-  //       setProduct(res);
-  //     } catch { }
-  //   };
-  //   fetch();
+  //   api.get(`/main/product/${productId}`).then(res => setProduct(res)); // ✅ 변경: /products/:id → /main/product/:id
   // }, [productId]);
 
   const product = tradeItems.find(item => item.productId === Number(productId)) || {
@@ -31,6 +28,18 @@ export default function TradeDetailPage() {
     createdAt: '',
     viewCount: 0,
   };
+
+  // 찜 토글 — 백엔드 완성 후 아래로 교체
+  // ✅ 변경: POST /api/products/{productId}/like → POST /api/v1/wishlist/{memberId}/{productId}
+  // const handleLike = async () => {
+  //   try {
+  //     const memberId = localStorage.getItem('memberId');
+  //     await api.post(`/api/v1/wishlist/${memberId}/${productId}`);
+  //     setLiked(prev => !prev);
+  //   } catch (err) {
+  //     console.error('찜 토글 실패:', err);
+  //   }
+  // };
 
   return (
     <div className="max-w-5xl mx-auto md:py-10 bg-white">
@@ -101,11 +110,12 @@ export default function TradeDetailPage() {
           <div className="mt-auto flex items-center gap-2 pt-4 border-t border-[#F0F0F0]">
             <button
               onClick={() => setLiked(!liked)}
+              // 백엔드 완성 후: onClick={handleLike}
               className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${liked ? 'border-[#FF6F0F] bg-[#FFF0E6]' : 'border-[#EDEDED]'}`}
             >
               <IconHeart filled={liked} />
             </button>
-            {/* 백엔드 완성 후: POST /api/trades/chatrooms { productId } → chatroomId 받아서 navigate(`/chat/${chatroomId}`) */}
+            {/* 백엔드 완성 후: POST /trades/chatrooms { productId } → chatroomId 받아서 navigate(`/chat/${chatroomId}`) */}
             <button
               onClick={() => navigate('/chat')}
               className="flex-1 h-12 rounded-xl bg-[#FF6F0F] text-white font-bold text-sm hover:bg-[#E55C00] transition-colors"

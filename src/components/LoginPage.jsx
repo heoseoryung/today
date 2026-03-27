@@ -42,7 +42,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// 명세: GET /api/auth/oauth2/authorize/{provider}
 const SOCIAL_LOGINS = [
   {
     provider: 'kakao',
@@ -73,24 +72,53 @@ const SOCIAL_LOGINS = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [isSignup, setIsSignup] = useState(false);
+  const [formData, setFormData] = useState({ email: '', password: '', name: '', phoneNumber: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 명세: GET /api/auth/oauth2/authorize/{provider} → 소셜 로그인 리다이렉트
-  // 백엔드 완성 후: window.location.href = `http://localhost:8080/api/auth/oauth2/authorize/${provider}`;
+  // 명세: GET /oauth2/authorization/google (구글만 redirect 방식)
+  // 백엔드 완성 후: window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
   const handleSocialLogin = (provider) => {
     console.log('소셜 로그인:', provider);
     localStorage.setItem('accessToken', 'mock-token');
     navigate('/');
   };
 
-  // 임시 이메일 로그인 — 백엔드 완성 후 소셜 로그인으로 대체
+  // 명세: POST /auth/login { email, password }
+  // 응답: accessToken (헤더), refreshToken (쿠키)
+  // 백엔드 완성 후 아래 주석 해제
+  // const handleLogin = async () => {
+  //   const csrfRes = await api.get('/api/v1/csrf'); //
+  //   const res = await api.post('/auth/login', {
+  //     email: formData.email,
+  //     password: formData.password,
+  //   }, { headers: { 'X-XSRF-TOKEN': csrfRes.token } });
+  //   localStorage.setItem('accessToken', res.accessToken);
+  //   navigate('/');
+  // };
+
+  // 명세: POST /auth/signup { email, password, name, phoneNumber }
+  // 백엔드 완성 후 아래 주석 해제
+  // const handleSignup = async () => {
+  //   await api.post('/auth/signup', {
+  //     email: formData.email,
+  //     password: formData.password,
+  //     name: formData.name,
+  //     phoneNumber: formData.phoneNumber,
+  //   });
+  //   setIsSignup(false); // 회원가입 후 로그인 화면으로
+  // };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     if (!formData.email || !formData.password) {
       setError('이메일과 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+    if (isSignup && !formData.name) {
+      setError('이름을 입력해주세요.');
       return;
     }
     setLoading(true);
@@ -118,12 +146,38 @@ export default function LoginPage() {
 
           {/* 타이틀 */}
           <div className="text-center mb-8">
-            <h1 className="text-[36px] font-black text-[#1A1A1A] mb-2">로그인</h1>
+            <h1 className="text-[36px] font-black text-[#1A1A1A] mb-2">
+              {isSignup ? '회원가입' : '로그인'}
+            </h1>
             <p className="text-[13px] text-gray-400">간편하게 가입하고 상품을 확인하세요</p>
           </div>
 
-          {/* 이메일 로그인 폼 — 임시, 백엔드 완성 후 제거 예정 */}
+          {/* 이메일 폼 */}
           <form onSubmit={handleSubmit} className="space-y-3 mb-6">
+            {/* 회원가입 시 추가 필드 */}
+            {isSignup && (
+              <>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.name}
+                    placeholder="이름"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-[#F8F8F8] border border-transparent rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF6F0F]/30 focus:bg-white transition-all placeholder:text-gray-300"
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    value={formData.phoneNumber}
+                    placeholder="전화번호"
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    className="w-full px-4 py-3.5 bg-[#F8F8F8] border border-transparent rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#FF6F0F]/30 focus:bg-white transition-all placeholder:text-gray-300"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"><IconMail /></span>
               <input
@@ -160,7 +214,16 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3.5 rounded-2xl bg-[#FF6F0F] text-white font-bold text-[14px] hover:bg-[#E55C00] active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              {loading ? '로그인 중...' : '로그인'}
+              {loading ? '처리 중...' : isSignup ? '회원가입' : '로그인'}
+            </button>
+
+            {/* 로그인/회원가입 전환 */}
+            <button
+              type="button"
+              onClick={() => { setIsSignup(!isSignup); setError(''); }}
+              className="w-full text-[13px] text-gray-400 hover:text-[#FF6F0F] transition-colors"
+            >
+              {isSignup ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
             </button>
           </form>
 
@@ -170,7 +233,7 @@ export default function LoginPage() {
             <span className="relative px-3 bg-white text-[12px] text-gray-300 font-medium">또는</span>
           </div>
 
-          {/* 소셜 로그인 */}
+          {/* 소셜 로그인 — 명세: GET /oauth2/authorization/{provider} */}
           <div className="space-y-2.5">
             {SOCIAL_LOGINS.map((item) => (
               <button
